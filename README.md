@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/github/gonzalogabrielfm/minecraftgonza/graph/badge.svg?token=Z6VOA3MLSZ)](https://codecov.io/github/gonzalogabrielfm/minecraftgonza)
+
 # Linux Starter Kit
 
 Martin O'Hanlon
