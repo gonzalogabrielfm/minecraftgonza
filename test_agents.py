@@ -1,11 +1,11 @@
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from Agents.ChatAgent import ChatAgent
 from Agents.BlockAgent import BlockAgent
 from Agents.AiAgent import GeminiAgent
 from Agents.MockAgent import MockAgent
 from MyAdventures.mcpi.vec3 import Vec3
-
+import os
 
 @pytest.fixture
 def mock_minecraft():
@@ -39,21 +39,44 @@ def test_block_agent_follow_logic(mock_minecraft):
     assert agent.current_pos is not None
 
 
+@pytest.fixture
+def mock_gemini_agent():
+    """Create a mock GeminiAgent with mocked AI response."""
+    agent = GeminiAgent("TestGeminiAgent", "Test context")
+    agent.model = MagicMock()
+    agent.model.generate_content.return_value.text = "AI Response"
+    return agent
+
+# Test initialization of GeminiAgent
 def test_gemini_agent_initialization(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "fake_key")
     agent = GeminiAgent("TestGeminiAgent", "Test context")
     assert agent.name == "TestGeminiAgent"
     assert agent.context == "Test context"
 
-
-def test_gemini_agent_response(monkeypatch):
-    monkeypatch.setenv("GEMINI_API_KEY", "fake_key")
-    agent = GeminiAgent("TestGeminiAgent", "Test context")
-    agent.model = MagicMock()
-    agent.model.generate_content.return_value.text = "AI Response"
-
-    response = agent.generate_response("Hello")
+def test_gemini_agent_generate_response(mock_gemini_agent):
+    response = mock_gemini_agent.generate_response("Hello")
     assert response == "AI Response"
+
+@patch('os.getenv')
+def test_gemini_agent_setup_ai_success(mock_getenv, monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "fake_key")
+    mock_getenv.return_value = "fake_key"
+
+    agent = GeminiAgent("TestGeminiAgent", "Test context")
+    agent.setup_ai()
+
+    assert agent.model is not None
+
+
+
+def test_gemini_agent_generate_empty_response(mock_gemini_agent):
+    mock_gemini_agent.model.generate_content.return_value.text = ""
+
+    with pytest.raises(Exception, match="Empty response from Gemini"):
+        mock_gemini_agent.generate_response("Hello")
+
+
 
 
 def test_mock_bot_initialization():
