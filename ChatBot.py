@@ -60,6 +60,7 @@ class MinecraftChatBot:
                 agent.post_chat(f":(")
                 agent.stop()
 
+
             else:
                 # Random generic response
                 agent.post_chat(random.choice(responses))
